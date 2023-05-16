@@ -6,6 +6,11 @@ import Footer from '../components/Footer';
 import axios from 'axios';
 import moment from 'moment';
 import Loader from '../components/Loader';
+import { io } from 'socket.io-client';
+
+const socket = io('/', {
+    reconnection: true
+})
 
 
 
@@ -13,6 +18,8 @@ const Home = () => {
 
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [postAddLike, setPostAddLike] = useState([]);
+    const [postRemoveLike, setPostRemoveLike] = useState([]);
 
     //display posts
 
@@ -31,7 +38,18 @@ const Home = () => {
         showPosts();
     }, []);
 
+    useEffect(() => {
+        socket.on('add-like', (newPosts) => {
+            setPostAddLike(newPosts);
+            setPostRemoveLike('');
+        });
+        socket.on('remove-like', (newPosts) => {
+            setPostRemoveLike(newPosts);
+            setPostAddLike('');
+        });
+    }, [])
 
+    let uiPosts = postAddLike.length > 0 ? postAddLike : postRemoveLike.length > 0 ? postRemoveLike : posts;
 
     return (
         <>
@@ -44,7 +62,7 @@ const Home = () => {
                             {
                                 loading ? <Loader /> :
 
-                                    posts && posts.map((post, index) => (
+                                    uiPosts.map((post, index) => (
                                         <Grid item xs={2} sm={4} md={4} key={index} >
                                             <PostCard
                                                 id={post._id}

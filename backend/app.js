@@ -7,11 +7,18 @@ require("dotenv").config();
 var cors = require('cors');
 var cookieParser = require('cookie-parser');
 
+//adding socket.io configuration
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server);
+
 const errorHandler = require('./middleware/error');
 
 //import routes
 const authRoutes = require('./routes/authRoutes');
 const postRoute = require('./routes/postRoute');
+const { Socket } = require("dgram");
 
 //database connection
 mongoose.connect(process.env.DATABASE, {
@@ -45,7 +52,20 @@ app.use(errorHandler);
 //port
 const port = process.env.PORT || 9000
 
-app.listen(port, () => {
+// app.listen(port, () => {
+//     console.log(` Server running on port ${port}`);
+// })
+io.on('connection', (socket) => {
+    //console.log('a user connected', socket.id);
+    socket.on('comment', (msg) => {
+        // console.log('new comment received', msg);
+        io.emit("new-comment", msg);
+    })
+})
+
+exports.io = io
+
+server.listen(port, () => {
     console.log(` Server running on port ${port}`);
 })
 

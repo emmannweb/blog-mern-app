@@ -1,6 +1,7 @@
 const cloudinary = require('../utils/cloudinary');
 const Post = require('../models/postModel');
 const ErrorResponse = require('../utils/errorResponse');
+const main = require('../app');
 
 //create post
 exports.createPost = async (req, res, next) => {
@@ -142,11 +143,12 @@ exports.updatePost = async (req, res, next) => {
 exports.addComment = async (req, res, next) => {
     const { comment } = req.body;
     try {
-        const post = await Post.findByIdAndUpdate(req.params.id, {
+        const postComment = await Post.findByIdAndUpdate(req.params.id, {
             $push: { comments: { text: comment, postedBy: req.user._id } }
         },
             { new: true }
-        )
+        );
+        const post = await Post.findById(postComment._id).populate('comments.postedBy', 'name email');
         res.status(200).json({
             success: true,
             post
@@ -167,10 +169,14 @@ exports.addLike = async (req, res, next) => {
             $addToSet: { likes: req.user._id }
         },
             { new: true }
-        )
+        );
+        const posts = await Post.find().sort({ createdAt: -1 }).populate('postedBy', 'name');
+        main.io.emit('add-like', posts);
+
         res.status(200).json({
             success: true,
-            post
+            post,
+            posts
         })
 
     } catch (error) {
@@ -188,7 +194,11 @@ exports.removeLike = async (req, res, next) => {
             $pull: { likes: req.user._id }
         },
             { new: true }
-        )
+        );
+
+        const posts = await Post.find().sort({ createdAt: -1 }).populate('postedBy', 'name');
+        main.io.emit('remove-like', posts);
+
         res.status(200).json({
             success: true,
             post
