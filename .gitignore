@@ -10,8 +10,11 @@
 
 # production
 /frontend/node_modules
+/backend/node_modules
 package-lock.json
 /frontend/package-lock.json
+/backend/package-lock.json
+package-lock.json
 
 # misc
 .env
