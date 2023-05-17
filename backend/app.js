@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 require("dotenv").config();
 var cors = require('cors');
 var cookieParser = require('cookie-parser');
+const path = require('path');
 
 //adding socket.io configuration
 const http = require('http');
@@ -44,6 +45,20 @@ app.use(cors());
 //ROUTES MIDDLEWARE
 app.use('/api', authRoutes);
 app.use('/api', postRoute);
+
+__dirname = path.resolve()
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '/frontend/build')))
+
+  app.get('*', (req, res) =>
+    res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'))
+  )
+} else {
+  app.get('/', (req, res) => {
+    res.send('API is running....')
+  })
+}
 
 
 //error middleware
