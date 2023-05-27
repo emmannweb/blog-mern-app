@@ -54,7 +54,14 @@ app.use(cors());
 // prevent SQL injection
 app.use(mongoSanitize());
 // adding security headers
-app.use(helmet());
+app.use(
+  helmet.contentSecurityPolicy({
+    useDefaults: true,
+    directives: {
+      "img-src": ["'self'", "https: data:"]
+    }
+  })
+)
 // prevent Cross-site Scripting XSS
 app.use(xss());
 //limit queries per 15mn
